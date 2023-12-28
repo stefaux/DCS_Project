@@ -9,23 +9,22 @@ import Components.PetriTransition;
 import DataObjects.DataCar;
 import DataObjects.DataCarQueue;
 import DataObjects.DataString;
+import DataObjects.DataTransfer;
+import DataOnly.TransferOperation;
 import Enumerations.LogicConnector;
 import Enumerations.TransitionCondition;
 import Enumerations.TransitionOperation;
 
 public class Lane {
 	public static void main(String[] args) {
-		
-		//--------------------------------------------------------------------
-		//-------------------------------Lane1--------------------------------
-		//--------------------------------------------------------------------
-		
+
 		PetriNet pn = new PetriNet();
 		pn.PetriNetName = "Main Petri";
 		pn.NetworkPort = 1080;
 		
 		DataCar p1 = new DataCar();
 		p1.SetName("P_a1");
+		p1.SetValue(1);
 		pn.PlaceList.add(p1);
 
 		DataCarQueue p2 = new DataCarQueue();
@@ -41,20 +40,15 @@ public class Lane {
 		p4.SetName("P_b1");
 		pn.PlaceList.add(p4);
 
-		DataString OP1 = new DataString();
+		DataTransfer OP1 = new DataTransfer();
 		OP1.SetName("OP1");
+		OP1.Value = new TransferOperation("localhost", "1081", "in");
 		pn.PlaceList.add(OP1);
-		//Implementing OP1 as an output channel connected to the controller
-		//DataTransfer OP1 = new DataTransfer();
-		//OP1.SetName("OP1");
-		//OP1.Value = new TransferOperation("localhost", "1081", "in1");
-		//spn.PlaceList.add(OP1);
 		
 		DataString full = new DataString();
 		full.SetName("full");
 		full.SetValue("full");
 		pn.ConstantPlaceList.add(full);
-
 		
 		DataString green= new DataString();
 		green.SetName("green");
@@ -83,14 +77,14 @@ public class Lane {
 
 		GuardMapping grdT11 = new GuardMapping();
 		grdT11.condition= T1Ct3;
-		grdT11.Activations.add(new Activation(t1, "full", TransitionOperation.Copy, "OP1"));
-		grdT11.Activations.add(new Activation(t1, "P_a1", TransitionOperation.Copy, "P_a1"));
+		grdT11.Activations.add(new Activation(t1, "full", TransitionOperation.SendOverNetwork, "OP1"));
+		grdT11.Activations.add(new Activation(t1, "P_a1", TransitionOperation.Move, "P_a1"));
 		t1.GuardMappingList.add(grdT11);
 		
 		t1.Delay = 0;
 		pn.Transitions.add(t1);
 
-		// T2 ------------------------------------------------
+		// T2
 		PetriTransition t2 = new PetriTransition(pn);
 		t2.TransitionName = "T_e1";
 		t2.InputPlaceName.add("P_x1");
@@ -110,16 +104,8 @@ public class Lane {
 		
 		t2.Delay = 0;
 		pn.Transitions.add(t2);
-		
-		
-		
-		//-------------------------------------------------------------------------------------
-		//----------------------------PN Start-------------------------------------------------
-		//-------------------------------------------------------------------------------------
 
-		System.out.println("Exp1 started \n ------------------------------");
 		pn.Delay = 2000;
-		//pn.Start();
 		
 		PetriNetWindow frame = new PetriNetWindow(false);
 		frame.petriNet = pn;
